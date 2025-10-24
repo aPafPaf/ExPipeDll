@@ -1,10 +1,7 @@
 ﻿using ExileCore.PoEMemory.Components;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipes;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -22,6 +19,7 @@ namespace ExPipeDll
                 if (!componentWorldItem.ItemEntity.TryGetComponent(out Base componentBase)) continue;
                 if (entity.DistancePlayer > Settings.LootDIstance.Value) continue;
                 if (componentBase.Info.BaseItemTypeDat.ClassName != "StackableCurrency") continue;
+                if (Math.Abs(GameController.Player.PosNum.Z - entity.PosNum.Z) > 100) continue;
 
                 SendEntityId(entity.Id);
 

@@ -1,10 +1,8 @@
 ﻿using ExileCore;
 using ExileCore.PoEMemory.MemoryObjects;
 using ExileCore.Shared.Enums;
-using SharpDX;
 using System.Collections.Generic;
 using System.Linq;
-using Vector2 = System.Numerics.Vector2;
 
 namespace ExPipeDll;
 
