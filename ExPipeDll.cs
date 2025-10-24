@@ -11,7 +11,7 @@ public partial class ExPipeDll : BaseSettingsPlugin<ExPipeDllSettings>
     List<Entity> entitiesWorldItems = new List<Entity>();
     public override bool Initialise()
     {
-        Settings.SendButton.OnPressed = SendPacket;
+        Settings.SendButton.OnPressed = DebugSendEntityId;
 
         return true;
     }

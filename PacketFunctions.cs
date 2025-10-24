@@ -27,9 +27,9 @@ namespace ExPipeDll
             }
         }
 
-        public void SendPacket()
+        public void DebugSendEntityId()
         {
-            if (!int.TryParse(Settings.TextNode.Value, out int entityId)) return;
+            if (!int.TryParse(Settings.DebugEntityId.Value, out int entityId)) return;
             SendEntityId((uint)entityId);
         }
         public static void SendEntityId(uint entityId)
