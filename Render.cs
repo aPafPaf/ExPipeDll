@@ -1,10 +1,5 @@
 ﻿using ExileCore.PoEMemory.Components;
 using ImGuiNET;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ExPipeDll
 {
@@ -12,7 +7,10 @@ namespace ExPipeDll
     {
         public override void Render()
         {
-            DrawWindow();
+            if (Settings.LootWindow.Value)
+            {
+                DrawWindow();
+            }
         }
         private void DrawWindow()
         {

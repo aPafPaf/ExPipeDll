@@ -4,7 +4,9 @@ using ExileCore.Shared.Nodes;
 namespace ExPipeDll;
 
 public class ExPipeDllSettings : ISettings
-{    public ToggleNode Enable { get; set; } = new ToggleNode(false);
+{
+    public ToggleNode Enable { get; set; } = new ToggleNode(false);
+    public ToggleNode LootWindow { get; set; } = new ToggleNode(false);
     public ButtonNode SendButton { get; set; } = new ButtonNode();
     public TextNode TextNode { get; set; } = new TextNode("1");
     public HotkeyNode LootLoopHotKey { get; set; } = new HotkeyNode(System.Windows.Forms.Keys.A);
