@@ -9,9 +9,18 @@ namespace ExPipeDll;
 public partial class ExPipeDll : BaseSettingsPlugin<ExPipeDllSettings>
 {
     List<Entity> entitiesWorldItems = new List<Entity>();
+    Dictionary<string, bool> lootClasses = new Dictionary<string, bool>();
+
     public override bool Initialise()
     {
         Settings.SendButton.OnPressed = DebugSendEntityId;
+        Settings.LootClassSettings.UpdateSettings.OnPressed = () =>
+        {
+            lootClasses.Clear();
+            lootClasses.Add("QuestItem", Settings.LootClassSettings.QuestItem.Value);
+            lootClasses.Add("StackableCurrency", Settings.LootClassSettings.StackableCurrency.Value);
+            lootClasses.Add("MapFragment", Settings.LootClassSettings.MapFragments.Value);
+        };
 
         return true;
     }

@@ -12,6 +12,7 @@ namespace ExPipeDll
                 DrawWindow();
             }
         }
+
         private void DrawWindow()
         {
             ImGui.SetNextWindowSize(new System.Numerics.Vector2(0, 0));

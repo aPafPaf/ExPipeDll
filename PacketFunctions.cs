@@ -18,8 +18,11 @@ namespace ExPipeDll
                 if (!entity.TryGetComponent(out ExileCore.PoEMemory.Components.WorldItem componentWorldItem)) continue;
                 if (!componentWorldItem.ItemEntity.TryGetComponent(out Base componentBase)) continue;
                 if (entity.DistancePlayer > Settings.LootDIstance.Value) continue;
-                if (componentBase.Info.BaseItemTypeDat.ClassName != "StackableCurrency") continue;
+                if (!lootClasses.TryGetValue(componentBase.Info.BaseItemTypeDat.ClassName, out bool allowLoot)) continue;
+                if (!allowLoot) continue;
                 if (Math.Abs(GameController.Player.PosNum.Z - entity.PosNum.Z) > 100) continue;
+
+                if (!Settings.LootLoopHotKey.IsPressed()) return;
 
                 SendEntityId(entity.Id);
 
@@ -32,6 +35,7 @@ namespace ExPipeDll
             if (!int.TryParse(Settings.DebugEntityId.Value, out int entityId)) return;
             SendEntityId((uint)entityId);
         }
+
         public static void SendEntityId(uint entityId)
         {
             Task.Run(() =>
