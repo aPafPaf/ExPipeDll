@@ -14,13 +14,7 @@ public partial class ExPipeDll : BaseSettingsPlugin<ExPipeDllSettings>
     public override bool Initialise()
     {
         Settings.SendButton.OnPressed = DebugSendEntityId;
-        Settings.LootClassSettings.UpdateSettings.OnPressed = () =>
-        {
-            lootClasses.Clear();
-            lootClasses.Add("QuestItem", Settings.LootClassSettings.QuestItem.Value);
-            lootClasses.Add("StackableCurrency", Settings.LootClassSettings.StackableCurrency.Value);
-            lootClasses.Add("MapFragment", Settings.LootClassSettings.MapFragments.Value);
-        };
+        Settings.LootClassSettings.UpdateSettings.OnPressed = UpdateDicttonary;
 
         return true;
     }
@@ -28,6 +22,7 @@ public partial class ExPipeDll : BaseSettingsPlugin<ExPipeDllSettings>
     public override void AreaChange(AreaInstance area)
     {
         entitiesWorldItems.Clear();
+        UpdateDicttonary();
     }
 
     public override Job Tick()
@@ -42,5 +37,15 @@ public partial class ExPipeDll : BaseSettingsPlugin<ExPipeDllSettings>
         }
 
         return null;
+    }
+
+    public void UpdateDicttonary()
+    {
+        lootClasses.Clear();
+        lootClasses.Add("QuestItem", Settings.LootClassSettings.QuestItem.Value);
+        lootClasses.Add("StackableCurrency", Settings.LootClassSettings.StackableCurrency.Value);
+        lootClasses.Add("MapFragment", Settings.LootClassSettings.MapFragments.Value);
+        lootClasses.Add("Map", Settings.LootClassSettings.Map.Value);
+        lootClasses.Add("HeistBlueprint", Settings.LootClassSettings.HeistBlueprint.Value);
     }
 }

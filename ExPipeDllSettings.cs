@@ -21,7 +21,9 @@ public class LootClassSettings
 {
     public ToggleNode QuestItem { get; set; } = new ToggleNode(true);
     public ToggleNode StackableCurrency { get; set; } = new ToggleNode(true);
-    public ToggleNode MapFragments { get; set; } = new ToggleNode(true); 
+    public ToggleNode MapFragments { get; set; } = new ToggleNode(true);
+    public ToggleNode Map { get; set; } = new ToggleNode(true);
+    public ToggleNode HeistBlueprint { get; set; } = new ToggleNode(true);
 
     public ButtonNode UpdateSettings { get; set; } = new ButtonNode();
 }
