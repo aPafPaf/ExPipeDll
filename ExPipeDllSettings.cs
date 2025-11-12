@@ -26,6 +26,7 @@ public class LootClassSettings
     public ToggleNode HeistBlueprint { get; set; } = new ToggleNode(true);
     public ToggleNode DivinationCard { get; set; } = new ToggleNode(true);
     public ToggleNode Jewel { get; set; } = new ToggleNode(true);
+    public ToggleNode IncubatorStackable { get; set; } = new ToggleNode(true);
 
     public ButtonNode UpdateSettings { get; set; } = new ButtonNode();
 }

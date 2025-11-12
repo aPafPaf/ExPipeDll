@@ -49,5 +49,6 @@ public partial class ExPipeDll : BaseSettingsPlugin<ExPipeDllSettings>
         lootClasses.Add("HeistBlueprint", Settings.LootClassSettings.HeistBlueprint.Value);
         lootClasses.Add("DivinationCard", Settings.LootClassSettings.DivinationCard.Value);
         lootClasses.Add("Jewel", Settings.LootClassSettings.Jewel.Value);
+        lootClasses.Add("IncubatorStackable", Settings.LootClassSettings.IncubatorStackable.Value);
     }
 }
