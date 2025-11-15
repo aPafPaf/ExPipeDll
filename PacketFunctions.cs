@@ -35,6 +35,14 @@ namespace ExPipeDll
             if (!int.TryParse(Settings.DebugEntityId.Value, out int entityId)) return;
 
             var isLoading = GameController.Game.LoadingState.IsLoading;
+            var isConnected = GameController.IngameState.ServerData.NetworkState == ExileCore.Shared.Enums.NetworkStateE.Connected;
+            
+            if(!isConnected)
+            {
+                LogMessage($"[DebugSendEntityId] !isConnected!!");
+                return;
+            }
+
             if (isLoading)
             {
                 LogMessage($"[DebugSendEntityId] isLoading!!");
