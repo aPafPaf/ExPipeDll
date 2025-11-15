@@ -31,7 +31,9 @@ public partial class ExPipeDll : BaseSettingsPlugin<ExPipeDllSettings>
         var worldItems = GameController.EntityListWrapper.ValidEntitiesByType[EntityType.WorldItem];
         entitiesWorldItems = worldItems.Where(x => x.IsValid && x.IsTargetable).ToList();
 
-        if (Settings.LootLoopHotKey.IsPressed())
+        var isLoading = GameController.Game.LoadingState.IsLoading;
+
+        if (Settings.LootLoopHotKey.IsPressed() && !isLoading)
         {
             LootLoop();
         }
