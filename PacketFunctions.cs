@@ -33,6 +33,14 @@ namespace ExPipeDll
         public void DebugSendEntityId()
         {
             if (!int.TryParse(Settings.DebugEntityId.Value, out int entityId)) return;
+
+            var isLoading = GameController.Game.LoadingState.IsLoading;
+            if (isLoading)
+            {
+                LogMessage($"[DebugSendEntityId] isLoading!!");
+                return;
+            }
+
             SendEntityId((uint)entityId);
         }
 
