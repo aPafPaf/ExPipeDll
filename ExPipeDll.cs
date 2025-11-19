@@ -28,7 +28,8 @@ public partial class ExPipeDll : BaseSettingsPlugin<ExPipeDllSettings>
     public override Job Tick()
     {
         entitiesWorldItems.Clear();
-        var worldItems = GameController.EntityListWrapper.ValidEntitiesByType[EntityType.WorldItem];
+        //var worldItems = GameController.EntityListWrapper.ValidEntitiesByType[EntityType.WorldItem];
+        var worldItems = GameController.IngameState.IngameUi.ItemsOnGroundLabelsVisible.Where(x => x.CanPickUp && x.IsVisible).Select(x => x.ItemOnGround).ToList();
         entitiesWorldItems = worldItems.Where(x => x.IsValid && x.IsTargetable).ToList();
 
         var isLoading = GameController.Game.LoadingState.IsLoading;
