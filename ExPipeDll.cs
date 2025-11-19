@@ -33,8 +33,9 @@ public partial class ExPipeDll : BaseSettingsPlugin<ExPipeDllSettings>
         entitiesWorldItems = worldItems.Where(x => x.IsValid && x.IsTargetable).ToList();
 
         var isLoading = GameController.Game.LoadingState.IsLoading;
+        var isConnected = GameController.IngameState.ServerData.NetworkState == NetworkStateE.Connected;
 
-        if (Settings.LootLoopHotKey.IsPressed() && !isLoading)
+        if (Settings.LootLoopHotKey.IsPressed() && !isLoading && isConnected)
         {
             LootLoop();
         }
