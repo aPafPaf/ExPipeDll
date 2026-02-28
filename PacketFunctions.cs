@@ -1,72 +1,162 @@
 ﻿using ExileCore.PoEMemory.Components;
+using ExileCore.PoEMemory.MemoryObjects;
 using System;
-using System.IO;
-using System.IO.Pipes;
+using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace ExPipeDll
 {
     public partial class ExPipeDll
     {
+        // Constants
+        private const int MaxZDifference = 100;
+        private const int PacketTypeBitShift = 24;
+        private const uint IdMask = 0xFFFFFF;
+
+        public enum PacketType : byte
+        {
+            Interact = 1,
+            GrabBeast = 7,
+            DeleteBeast = 8,
+            AcceptTrade = 20,
+        }
+
+        public Dictionary<uint, DateTime> LootSendTimestamps { get; private set; } = new();
+
+        private bool CanSendLoot(uint id, int delayMs)
+            => !LootSendTimestamps.TryGetValue(id, out var last) ||
+               DateTime.Now - last > TimeSpan.FromMilliseconds(delayMs);
+
+        private bool TryGetLootItem(Entity entity, out Base baseComponent)
+        {
+            baseComponent = null;
+
+            if (!entity.TryGetComponent(out WorldItem worldComponent))
+                return false;
+
+            if (!worldComponent.ItemEntity.TryGetComponent(out baseComponent))
+                return false;
+
+            return true;
+        }
+
+        private bool IsLootAllowed(Base baseComponent)
+            => lootClasses.TryGetValue(baseComponent.Info.BaseItemTypeDat.ClassName, out bool allowed) && allowed;
+
+        private bool IsLootInRange(Entity entity)
+            => entity.DistancePlayer <= Settings.LootDistance.Value;
+
+        private bool IsLootAtSameHeight(Entity entity)
+            => Math.Abs(GameController.Player.PosNum.Z - entity.PosNum.Z) <= MaxZDifference;
+
         public void LootLoop()
         {
             foreach (var entity in entitiesWorldItems)
             {
-                if (!Settings.LootLoopHotKey.IsPressed()) return;
+                if (!Settings.LootLoopHotKey.IsPressed())
+                    return;
 
-                if (!entity.TryGetComponent(out ExileCore.PoEMemory.Components.WorldItem componentWorldItem)) continue;
-                if (!componentWorldItem.ItemEntity.TryGetComponent(out Base componentBase)) continue;
-                if (entity.DistancePlayer > Settings.LootDIstance.Value) continue;
-                if (!lootClasses.TryGetValue(componentBase.Info.BaseItemTypeDat.ClassName, out bool allowLoot)) continue;
-                if (!allowLoot) continue;
-                if (Math.Abs(GameController.Player.PosNum.Z - entity.PosNum.Z) > 100) continue;
+                if (!TryGetLootItem(entity, out var baseComponent))
+                    continue;
 
-                if (!Settings.LootLoopHotKey.IsPressed()) return;
+                if (!IsLootInRange(entity))
+                    continue;
 
-                SendEntityId(entity.Id);
+                if (!IsLootAllowed(baseComponent))
+                    continue;
 
-                Thread.Sleep(Settings.DelayAddingPacket.Value);
+                if (!IsLootAtSameHeight(entity))
+                    continue;
+
+                if (!CanSendLoot(entity.Id, Settings.DelayAddingPacket.Value))
+                    continue;
+
+                EnqueuePacket(PacketType.Interact, entity.Id);
             }
         }
 
         public void DebugSendEntityId()
         {
-            if (!int.TryParse(Settings.DebugEntityId.Value, out int entityId)) return;
+            if (!int.TryParse(Settings.DebugEntityId.Value, out int entityId))
+                return;
 
             var isLoading = GameController.Game.LoadingState.IsLoading;
             var isConnected = GameController.IngameState.ServerData.NetworkState == ExileCore.Shared.Enums.NetworkStateE.Connected;
             
-            if(!isConnected)
+            if (!isConnected)
             {
-                LogMessage($"[DebugSendEntityId] !isConnected!!");
+                LogMessage("[DebugSendEntityId] Not connected to server");
                 return;
             }
 
             if (isLoading)
             {
-                LogMessage($"[DebugSendEntityId] isLoading!!");
+                LogMessage("[DebugSendEntityId] Game is loading");
                 return;
             }
 
-            SendEntityId((uint)entityId);
+            EnqueuePacket(PacketType.Interact, (uint)entityId);
         }
 
         public static void SendEntityId(uint entityId)
         {
-            Task.Run(() =>
+            var msg = PackMessage(PacketType.Interact, entityId);
+            PipeConnector.SendMessage(msg);
+        }
+
+        public void SendPacket(PacketType type, uint id)
+        {
+            var msg = PackMessage(type, id);
+            PipeConnector.SendMessage(msg);
+        }
+
+        public static uint PackMessage(PacketType type, uint id)
+        {
+            return ((uint)type << PacketTypeBitShift) | (id & IdMask);
+        }
+
+        private void EnqueuePacket(PacketType type, uint id)
+            => LootPacketQueue.Enqueue((id, type));
+
+        private void HandleOutgoingPacket()
+        {
+            if (LootPacketQueue.Count == 0)
+                return;
+
+            // Preserve queue order while searching for the first sendable packet.
+            var items = new List<(uint id, PacketType type)>();
+            while (LootPacketQueue.Count > 0)
+                items.Add(LootPacketQueue.Dequeue());
+
+            int sendIndex = -1;
+            for (int i = 0; i < items.Count; i++)
             {
-                try
+                if (CanSendLoot(items[i].id, Settings.DelayAddingPacket.Value))
                 {
-                    using var client = new NamedPipeClientStream(".", "PoE_Pipe", PipeDirection.Out);
-                    client.Connect(1000); // Wait Connect Pipe
-                    using var writer = new BinaryWriter(client);
-                    writer.Write(entityId);
+                    sendIndex = i;
+                    break;
                 }
-                catch
-                {
-                }
-            });
+            }
+
+            if (sendIndex == -1)
+            {
+                // No packet is ready to be sent — restore queue in original order.
+                foreach (var it in items)
+                    LootPacketQueue.Enqueue(it);
+                return;
+            }
+
+            // Send the ready packet and record timestamp.
+            var toSend = items[sendIndex];
+            SendPacket(toSend.type, toSend.id);
+            LootSendTimestamps[toSend.id] = DateTime.Now;
+
+            // Re-enqueue remaining items in original order (excluding the sent one).
+            for (int i = 0; i < items.Count; i++)
+            {
+                if (i == sendIndex) continue;
+                LootPacketQueue.Enqueue(items[i]);
+            }
         }
     }
 }

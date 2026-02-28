@@ -13,7 +13,7 @@ public class ExPipeDllSettings : ISettings
     public TextNode DebugEntityId { get; set; } = new TextNode("1");
     public HotkeyNode LootLoopHotKey { get; set; } = new HotkeyNode(System.Windows.Forms.Keys.A);
     public RangeNode<int> DelayAddingPacket { get; set; } = new RangeNode<int>(100, 0, 500);
-    public RangeNode<int> LootDIstance { get; set; } = new RangeNode<int>(20, 0, 500);
+    public RangeNode<int> LootDistance { get; set; } = new RangeNode<int>(20, 0, 500);
 }
 
 [Submenu(CollapsedByDefault = true)]
