@@ -1,7 +1,6 @@
 ﻿using ExileCore;
 using ExileCore.PoEMemory.MemoryObjects;
 using ExileCore.Shared.Enums;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -31,15 +30,6 @@ public partial class ExPipeDll : BaseSettingsPlugin<ExPipeDllSettings>
 
     public override Job Tick()
     {
-        entitiesWorldItems.Clear();
-        var worldItems = GameController.IngameState.IngameUi.ItemsOnGroundLabelsVisible
-            .Where(x => x.CanPickUp && x.IsVisible)
-            .Select(x => x.ItemOnGround)
-            .ToList();
-        entitiesWorldItems = worldItems.Where(x => x.IsValid && x.IsTargetable).ToList();
-
-        var isLoading = GameController.Game.LoadingState.IsLoading;
-        var isConnected = GameController.IngameState.ServerData.NetworkState == NetworkStateE.Connected;
         var isHotKeyPressed = Settings.LootLoopHotKey.IsPressed();
 
         if (!isHotKeyPressed)
@@ -47,6 +37,23 @@ public partial class ExPipeDll : BaseSettingsPlugin<ExPipeDllSettings>
             LootPacketQueue.Clear();
             return null;
         }
+
+        entitiesWorldItems.Clear();
+        var worldItems = GameController.IngameState.IngameUi.ItemsOnGroundLabelsVisible
+            .Where(x => x.CanPickUp && x.IsVisible)
+            .Select(x => x.ItemOnGround)
+            .ToList();
+
+        entitiesWorldItems = worldItems.Where(x => x.IsValid && x.IsTargetable).ToList();
+
+        if (entitiesWorldItems.Count == 0)
+        {
+            LootPacketQueue.Clear();
+            return null;
+        }
+
+        var isLoading = GameController.Game.LoadingState.IsLoading;
+        var isConnected = GameController.IngameState.ServerData.NetworkState == NetworkStateE.Connected;
 
         if (!isLoading && isConnected)
         {
